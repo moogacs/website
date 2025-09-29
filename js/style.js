@@ -1,4 +1,21 @@
 $(function(){
+	// Set current timestamp for "Last login"
+	var now = new Date();
+	var options = { 
+		weekday: 'short', 
+		month: 'short', 
+		day: 'numeric',
+		hour: 'numeric', 
+		minute: '2-digit', 
+		second: '2-digit',
+		hour12: true 
+	};
+	var formattedDate = now.toLocaleDateString('en-US', options).replace(',', '');
+	$("#now").text(formattedDate);
+	
+	// Set current year in copyright
+	$("#current-year").text(new Date().getFullYear());
+	
 	//$("#now").append(Date.now());
 	$(".minmize").click(function(){
 		if($(".intro-text").hasClass("minimzed")){

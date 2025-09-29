@@ -18,7 +18,7 @@
             gtag('js', new Date());
             gtag('config', 'UA-134624204-1');
         </script>
-        <link href="css/all.min.css" rel="stylesheet">    
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />    
         <link href="css/style.css" rel="stylesheet">        
         <link href="https://fonts.googleapis.com/css?family=Raleway:400,700,800" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css?family=Indie+Flower&display=swap" rel="stylesheet">
@@ -52,7 +52,7 @@
                     <!-- <a href="https://bitbucket.org/mooga/" class="ico" target="_blank"><i class="fab fab fa-bitbucket"></i></a> -->
                     <a href="https://twitter.com/moogacs" class="ico" target="_blank"><i class="fab fa-twitter"></i></a>                    
                     <a href="https://www.xing.com/profile/Mohamed_Badawi9" class="ico" target="_blank"><i class="fab fa-xing"></i></a>                
-                    <a href="https://slackcommunity.com/hamburg/" class="ico" target="_blank"><i class="fab fa-slack"></i></a>                
+                    <!-- <a href="https://slackcommunity.com/hamburg/" class="ico" target="_blank"><i class="fab fa-slack"></i></a>                 -->
                     <!-- <a href="https://plus.google.com/+MohamedMooga" class="ico" target="_blank"><i class="fab fa-google-plus-g"></i></a>   -->
                         <div>
                             <a href="https://stackoverflow.com/users/5940860/mooga">
@@ -70,7 +70,7 @@
                         <li><p class="hand"><- you can play with</p></li>
                     </ul>                    
                     <div class="intro-text">                        
-                        <p>Last login: <span id="now"><?php echo date("D , M  h:i:sa"); ?></span></p>
+                        <p>Last login: <span id="now"></span></p>
                         <p>mooga-website:~ guest$ <span class="intro" id="intro"></span><span class="blink"></span></p>                         
                         <div class="welcome"></div>               
                     </div>
@@ -82,8 +82,8 @@
         </div>
 
         
-        <p class="text-right" style="padding-right: 5.6rem;">
-            <?php echo "Copy rights by Mooga &copy; " . date("Y")?>
+        <p class="text-right" style="padding-right: 5.6rem;" id="copyright">
+            Copy rights by Mooga &copy; <span id="current-year"></span>
         </p>
 <script
   src="https://code.jquery.com/jquery-3.3.1.min.js"
