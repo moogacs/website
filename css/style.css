@@ -118,7 +118,7 @@
 
 body {
   background: #000;
-  background-image: url("../assets/images.gif");   
+  background-image: url("../images.gif");   
   background-position: right top;
   color: #fff;
   font-family: 'Product Sans Regular', sans-serif;
@@ -181,7 +181,7 @@ body .contact .fa-home:hover {
 body .mooga {
   width: 200px;
   height: 200px;
-  background: url('../assets/mooga1.jpeg');
+  background: url('../mooga.png') no-repeat;
   background-position: top;
   border-radius: 50%; }
 
