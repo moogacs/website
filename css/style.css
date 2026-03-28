@@ -145,7 +145,7 @@ body .contact {
   color: #000 !important;
   z-index: 10000; }
 .contact {
-  height: 120vh;
+  min-height: 100vh;
 }
 body .contact .block {
   position: fixed;
