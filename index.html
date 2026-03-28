@@ -20,7 +20,7 @@
         </script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />    
         <link href="css/style.css" rel="stylesheet">        
-        <link href="https://fonts.googleapis.com/css?family=Raleway:400,700,800" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css?family=Indie+Flower&display=swap" rel="stylesheet">
         <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -76,6 +76,24 @@
                         <p>mooga-website:~ guest$ <span class="intro" id="intro"></span><span class="blink"></span></p>                         
                         <div class="welcome"></div>               
                     </div>
+                    <section class="talks-panel" aria-labelledby="talks-heading">
+                        <header class="talks-panel__header">
+                            <h2 id="talks-heading" class="talks-panel__title">Talks</h2>
+                            <p class="talks-panel__subtitle">Slides &amp; decks</p>
+                        </header>
+                        <ul class="talks-list">
+                            <li>
+                                <a class="talk-card" href="talks/effective_concurrency_in_go.pdf" target="_blank" rel="noopener noreferrer">
+                                    <span class="talk-card__icon" aria-hidden="true"><i class="far fa-file-pdf"></i></span>
+                                    <span class="talk-card__body">
+                                        <span class="talk-card__name">Effective concurrency in Go</span>
+                                        <span class="talk-card__meta"><span class="talk-card__badge">PDF</span></span>
+                                    </span>
+                                    <span class="talk-card__chevron" aria-hidden="true"><i class="fas fa-external-link-alt"></i></span>
+                                </a>
+                            </li>
+                        </ul>
+                    </section>
                 </div>
                 <div class="col-sm-12  col-md-12 col-lg-12">
                     <img src="https://algora.io/og/user/moogacs" />
