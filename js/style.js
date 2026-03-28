@@ -1,16 +1,15 @@
 $(function(){
-	// Set current timestamp for "Last login"
+	// "Last login" uses the visitor's locale and timezone (browser default)
 	var now = new Date();
-	var options = { 
-		weekday: 'short', 
-		month: 'short', 
+	var options = {
+		weekday: 'short',
+		month: 'short',
 		day: 'numeric',
-		hour: 'numeric', 
-		minute: '2-digit', 
-		second: '2-digit',
-		hour12: true 
+		hour: 'numeric',
+		minute: '2-digit',
+		second: '2-digit'
 	};
-	var formattedDate = now.toLocaleDateString('en-US', options).replace(',', '');
+	var formattedDate = now.toLocaleString(undefined, options);
 	$("#now").text(formattedDate);
 	
 	// Set current year in copyright
@@ -62,7 +61,7 @@ $(function(){
 				
 		];
 		var i = 0;
-		var txt = ' Hi there, as you can see i\'m a Software engineer. welcome to my website.  I spend a lot of time on terminal. You can catch me on stack overflow, github or send me an email and yes I know that I have to localize the \"Last login\" timestamp but i\'ve been lazy lately!'; /* The text */
+		var txt = ' Hi there, as you can see i\'m a Software engineer. welcome to my website.  I spend a lot of time on terminal. You can catch me on stack overflow, github or send me an email.'; /* The text */
 		//var txt =  ["Hello guest", "I am  Mooga"];
 		var speed = 50; /* The speed/duration of the effect in milliseconds */		
 		var text="";
