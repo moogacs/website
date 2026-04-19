@@ -190,6 +190,30 @@
                             </li>
                         </ul>
                     </section>
+                    <section class="talks-panel books-panel" id="books-reading-section" aria-labelledby="books-reading-heading">
+                        <header class="talks-panel__header">
+                            <h2 id="books-reading-heading" class="talks-panel__title">Currently reading</h2>
+                            <p class="talks-panel__subtitle">Three most recently updated from my Goodreads shelf</p>
+                        </header>
+                        <p class="books-panel__status" data-books-status>Loading…</p>
+                        <ul class="books-grid" id="books-currently-reading"></ul>
+                        <p class="books-panel__more">
+                            <a href="https://www.goodreads.com/review/list/185559715?shelf=currently-reading" target="_blank" rel="noopener noreferrer">All currently reading on Goodreads</a>
+                        </p>
+                    </section>
+                    <section class="talks-panel books-panel" id="books-read-section" aria-labelledby="books-read-heading">
+                        <header class="talks-panel__header">
+                            <h2 id="books-read-heading" class="talks-panel__title">Read</h2>
+                            <p class="talks-panel__subtitle">Everything on my Goodreads &ldquo;read&rdquo; shelf</p>
+                        </header>
+                        <p class="books-panel__status" data-books-status>Loading…</p>
+                        <ul class="books-grid" id="books-read"></ul>
+                        <p class="books-panel__more">
+                            <a href="https://www.goodreads.com/review/list/185559715?shelf=read" target="_blank" rel="noopener noreferrer">Full read shelf on Goodreads</a>
+                            ·
+                            <a href="https://www.goodreads.com/user/show/185559715" target="_blank" rel="noopener noreferrer">Goodreads profile</a>
+                        </p>
+                    </section>
                 </div>
             </div>            
         </div>
@@ -202,6 +226,7 @@
   src="https://code.jquery.com/jquery-3.3.1.min.js"
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
   crossorigin="anonymous"></script>
+  <script src="js/books.js"></script>
   <script src="js/style.js"></script>  
     </body>
     </html>
