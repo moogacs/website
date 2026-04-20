@@ -6,12 +6,9 @@
   var MAX_SHELF_PAGES = 30;
   /** Only show the N most recently updated titles on “currently reading”. */
   var CURRENTLY_READING_LIMIT = 3;
-  /**
-   * Browser cannot call goodreads.com RSS directly (CORS). We load the raw
-   * feed through a public proxy and parse XML locally — no 10-item cap like
-   * rss2json’s free tier.
-   */
-  var RSS_PROXY = "https://api.allorigins.win/raw?url=";
+  var FETCH_TIMEOUT_MS = 5000;
+  var RSS_PROXY_RAW = "https://api.allorigins.win/raw?url=";
+  var RSS_PROXY_GET = "https://api.allorigins.win/get?url=";
 
   function shelfRssBase(shelf) {
     return (
@@ -24,12 +21,51 @@
     );
   }
 
-  function fetchRssXml(targetUrl) {
-    var proxy = RSS_PROXY + encodeURIComponent(targetUrl);
-    return fetch(proxy, { credentials: "omit" }).then(function (res) {
-      if (!res.ok) throw new Error("Proxy HTTP " + res.status);
-      return res.text();
+  function fetchWithTimeout(url) {
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function () {
+      controller.abort();
+    }, FETCH_TIMEOUT_MS);
+    return fetch(url, {
+      credentials: "omit",
+      signal: controller.signal
+    }).finally(function () {
+      clearTimeout(timeoutId);
     });
+  }
+
+  function fetchRssXml(targetUrl) {
+    var rawUrl = RSS_PROXY_RAW + encodeURIComponent(targetUrl);
+    var getUrl = RSS_PROXY_GET + encodeURIComponent(targetUrl);
+    var rawReq = fetchWithTimeout(rawUrl)
+      .then(function (res) {
+        if (!res.ok) throw new Error("Proxy raw HTTP " + res.status);
+        return res.text();
+      })
+      .then(function (xml) {
+        if (!xml || xml.indexOf("<rss") === -1) {
+          throw new Error("Proxy raw invalid body");
+        }
+        return xml;
+      });
+
+    var getReq = fetchWithTimeout(getUrl)
+      .then(function (res) {
+        if (!res.ok) throw new Error("Proxy get HTTP " + res.status);
+        return res.json();
+      })
+      .then(function (payload) {
+        if (!payload || typeof payload.contents !== "string") {
+          throw new Error("Proxy get invalid body");
+        }
+        if (payload.contents.indexOf("<rss") === -1) {
+          throw new Error("Proxy get non-rss body");
+        }
+        return payload.contents;
+      });
+
+    // Use the first successful proxy response.
+    return Promise.any([rawReq, getReq]);
   }
 
   function firstChildText(parent, tag) {
@@ -88,6 +124,10 @@
           }
           if (chunk.length < RSS_PAGE_SIZE) return merged;
           return step(page + 1);
+        })
+        .catch(function (err) {
+          if (page === 1) throw err;
+          return merged;
         });
     }
 
@@ -258,21 +298,31 @@
     setSectionState(readingSection, "loading", "Loading…");
     setSectionState(readSection, "loading", "Loading…");
 
-    Promise.all([
-      fetchShelfAllPages("currently-reading"),
-      fetchShelfAllPages("read")
-    ])
-      .then(function (results) {
-        renderList(ulCur, latestCurrentlyReading(results[0] || []));
-        renderList(ulRead, results[1] || []);
+    // Load each shelf independently so currently-reading can render quickly.
+    fetchShelfAllPages("currently-reading")
+      .then(function (items) {
+        renderList(ulCur, latestCurrentlyReading(items || []));
         setSectionState(readingSection, "ready", "");
+      })
+      .catch(function () {
+        setSectionState(
+          readingSection,
+          "error",
+          "Could not load currently reading right now. Please refresh later."
+        );
+      });
+
+    fetchShelfAllPages("read")
+      .then(function (items) {
+        renderList(ulRead, items || []);
         setSectionState(readSection, "ready", "");
       })
       .catch(function () {
-        var msg =
-          "Could not load shelves (network or feed). You can still browse them on Goodreads.";
-        setSectionState(readingSection, "error", msg);
-        setSectionState(readSection, "error", msg);
+        setSectionState(
+          readSection,
+          "error",
+          "Could not load read shelf right now. Please refresh later."
+        );
       });
   }
 
