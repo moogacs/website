@@ -1,25 +1,10 @@
 (function () {
-  var GOODREADS_USER_ID = "185559715";
-  var GOODREADS_PROFILE = "https://www.goodreads.com/user/show/" + GOODREADS_USER_ID;
-  /** Goodreads RSS caps a single response; we paginate with per_page=100. */
-  var RSS_PAGE_SIZE = 100;
-  var MAX_SHELF_PAGES = 30;
+  var GOODREADS_PROFILE = "https://www.goodreads.com/user/show/185559715";
   /** Only show the N most recently updated titles on “currently reading”. */
   var CURRENTLY_READING_LIMIT = 3;
-  var FETCH_TIMEOUT_MS = 5000;
-  var RSS_PROXY_RAW = "https://api.allorigins.win/raw?url=";
-  var RSS_PROXY_GET = "https://api.allorigins.win/get?url=";
-
-  function shelfRssBase(shelf) {
-    return (
-      "https://www.goodreads.com/review/list_rss/" +
-      GOODREADS_USER_ID +
-      "?shelf=" +
-      encodeURIComponent(shelf) +
-      "&per_page=" +
-      RSS_PAGE_SIZE
-    );
-  }
+  /** Snapshot from Goodreads RSS (no browser CORS); regenerate with tools/fetch_goodreads_shelves.py */
+  var BOOKS_DATA_URL = "books-data.json";
+  var FETCH_TIMEOUT_MS = 12000;
 
   function fetchWithTimeout(url) {
     var controller = new AbortController();
@@ -28,110 +13,11 @@
     }, FETCH_TIMEOUT_MS);
     return fetch(url, {
       credentials: "omit",
-      signal: controller.signal
+      cache: "no-store",
+      signal: controller.signal,
     }).finally(function () {
       clearTimeout(timeoutId);
     });
-  }
-
-  function fetchRssXml(targetUrl) {
-    var rawUrl = RSS_PROXY_RAW + encodeURIComponent(targetUrl);
-    var getUrl = RSS_PROXY_GET + encodeURIComponent(targetUrl);
-    var rawReq = fetchWithTimeout(rawUrl)
-      .then(function (res) {
-        if (!res.ok) throw new Error("Proxy raw HTTP " + res.status);
-        return res.text();
-      })
-      .then(function (xml) {
-        if (!xml || xml.indexOf("<rss") === -1) {
-          throw new Error("Proxy raw invalid body");
-        }
-        return xml;
-      });
-
-    var getReq = fetchWithTimeout(getUrl)
-      .then(function (res) {
-        if (!res.ok) throw new Error("Proxy get HTTP " + res.status);
-        return res.json();
-      })
-      .then(function (payload) {
-        if (!payload || typeof payload.contents !== "string") {
-          throw new Error("Proxy get invalid body");
-        }
-        if (payload.contents.indexOf("<rss") === -1) {
-          throw new Error("Proxy get non-rss body");
-        }
-        return payload.contents;
-      });
-
-    // Use the first successful proxy response.
-    return Promise.any([rawReq, getReq]);
-  }
-
-  function firstChildText(parent, tag) {
-    if (!parent) return "";
-    var nodes = parent.getElementsByTagName(tag);
-    if (!nodes || !nodes.length) return "";
-    var t = nodes[0].textContent;
-    return t ? t.trim() : "";
-  }
-
-  function parseGoodreadsItems(xmlString) {
-    var parser = new DOMParser();
-    var doc = parser.parseFromString(xmlString, "application/xml");
-    if (doc.getElementsByTagName("parsererror").length) {
-      throw new Error("RSS parse error");
-    }
-    var raw = doc.getElementsByTagName("item");
-    var out = [];
-    for (var i = 0; i < raw.length; i++) {
-      var item = raw[i];
-      var desc = firstChildText(item, "description");
-      out.push({
-        title: firstChildText(item, "title"),
-        link: firstChildText(item, "link"),
-        pubDate: firstChildText(item, "pubDate"),
-        thumbnail:
-          firstChildText(item, "book_medium_image_url") ||
-          firstChildText(item, "book_image_url") ||
-          firstChildText(item, "book_small_image_url"),
-        description: desc,
-        content: desc,
-        book_id: firstChildText(item, "book_id")
-      });
-    }
-    return out;
-  }
-
-  function fetchShelfAllPages(shelf) {
-    var base = shelfRssBase(shelf);
-    var merged = [];
-    var seen = {};
-
-    function step(page) {
-      if (page > MAX_SHELF_PAGES) return Promise.resolve(merged);
-      var url = base + "&page=" + page;
-      return fetchRssXml(url)
-        .then(parseGoodreadsItems)
-        .then(function (chunk) {
-          if (!chunk.length) return merged;
-          for (var i = 0; i < chunk.length; i++) {
-            var b = chunk[i];
-            var id = b.book_id || b.link || b.title;
-            if (seen[id]) continue;
-            seen[id] = 1;
-            merged.push(b);
-          }
-          if (chunk.length < RSS_PAGE_SIZE) return merged;
-          return step(page + 1);
-        })
-        .catch(function (err) {
-          if (page === 1) throw err;
-          return merged;
-        });
-    }
-
-    return step(1);
   }
 
   function latestCurrentlyReading(items) {
@@ -286,6 +172,27 @@
     });
   }
 
+  /**
+   * Resolve js/books-data.json next to this script (same folder as books.js).
+   */
+  function snapshotUrl() {
+    var scripts = document.getElementsByTagName("script");
+    for (var i = scripts.length - 1; i >= 0; i--) {
+      var s = scripts[i];
+      if (s.src && /books\.js(\?|#|$)/i.test(s.src)) {
+        return s.src.replace(/books\.js(\?[^#]*)?(#.*)?$/i, BOOKS_DATA_URL);
+      }
+    }
+    return new URL("js/" + BOOKS_DATA_URL, window.location.href).href;
+  }
+
+  function loadSnapshot() {
+    return fetchWithTimeout(snapshotUrl()).then(function (res) {
+      if (!res.ok) throw new Error("snapshot HTTP " + res.status);
+      return res.json();
+    });
+  }
+
   function init() {
     var readingSection = document.getElementById("books-reading-section");
     var readSection = document.getElementById("books-read-section");
@@ -298,31 +205,21 @@
     setSectionState(readingSection, "loading", "Loading…");
     setSectionState(readSection, "loading", "Loading…");
 
-    // Load each shelf independently so currently-reading can render quickly.
-    fetchShelfAllPages("currently-reading")
-      .then(function (items) {
-        renderList(ulCur, latestCurrentlyReading(items || []));
+    loadSnapshot()
+      .then(function (data) {
+        var cur = (data && data.currentlyReading) || [];
+        var read = (data && data.read) || [];
+        renderList(ulCur, latestCurrentlyReading(cur));
         setSectionState(readingSection, "ready", "");
-      })
-      .catch(function () {
-        setSectionState(
-          readingSection,
-          "error",
-          "Could not load currently reading right now. Please refresh later."
-        );
-      });
-
-    fetchShelfAllPages("read")
-      .then(function (items) {
-        renderList(ulRead, items || []);
+        renderList(ulRead, read);
         setSectionState(readSection, "ready", "");
       })
       .catch(function () {
-        setSectionState(
-          readSection,
-          "error",
-          "Could not load read shelf right now. Please refresh later."
-        );
+        var msg =
+          "Book lists load from a local snapshot (js/books-data.json). " +
+          "If you’re developing locally, run: python3 tools/fetch_goodreads_shelves.py";
+        setSectionState(readingSection, "error", msg);
+        setSectionState(readSection, "error", msg);
       });
   }
 
