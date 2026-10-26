@@ -412,6 +412,11 @@ body .talk-card__icon--github {
   color: #fff;
 }
 
+body .talk-card__icon--crunchy {
+  background: linear-gradient(145deg, rgba(31, 200, 199, 0.2), rgba(31, 200, 199, 0.06));
+  color: var(--talk-accent);
+}
+
 body .talk-card__chevron {
   flex-shrink: 0;
   opacity: 0.45;
