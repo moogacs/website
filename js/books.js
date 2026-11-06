@@ -2,7 +2,7 @@
   var GOODREADS_PROFILE = "https://www.goodreads.com/user/show/185559715";
   /** Only show the N most recently updated titles on “currently reading”. */
   var CURRENTLY_READING_LIMIT = 3;
-  /** Snapshot from Goodreads RSS (no browser CORS); regenerate with tools/fetch_goodreads_shelves.py */
+  /** Snapshot from the Goodreads shelf widget (no browser CORS); regenerate with tools/fetch_goodreads_shelves.py */
   var BOOKS_DATA_URL = "books-data.json";
   var FETCH_TIMEOUT_MS = 12000;
 
@@ -20,6 +20,7 @@
     });
   }
 
+  /** Snapshots without pubDate are already newest-first; the stable sort keeps that order. */
   function latestCurrentlyReading(items) {
     if (!items || !items.length) return [];
     var scored = items.map(function (b) {
@@ -109,7 +110,8 @@
         if (fromDesc) thumb = safeImageUrl(fromDesc[1]);
       }
       var cover = largerCover(thumb) || thumb;
-      var author = extractAuthor(item.description || item.content || "");
+      var author =
+        item.author || extractAuthor(item.description || item.content || "");
       var bookHref = extractBookUrl(
         item.description || item.content || "",
         item.link

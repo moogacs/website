@@ -1,4 +1,4 @@
-# Regenerate js/books-data.json from Goodreads RSS (no browser CORS).
+# Regenerate js/books-data.json from the Goodreads shelf widget (no browser CORS).
 # Runs weekly; commit only when the snapshot changes.
 
 name: Refresh Goodreads books
